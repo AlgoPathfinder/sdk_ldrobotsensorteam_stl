@@ -20,7 +20,6 @@
  */
 
 #include "ldlidar_driver.h"
-#include "opencv2/opencv.hpp"
 
 uint64_t GetSystemTimeStamp(void) {
   std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> tp = 
@@ -157,11 +156,8 @@ int main(int argc, char **argv) {
 
   ldlidar::Points2D laser_scan_points;
   double lidar_spin_freq;
-  const int show_w=400;
-  const int show_h=300;
-  cv::Mat points_show(show_h,show_w,CV_8UC3);
   while (ldlidar::LDLidarDriver::IsOk()) {
-    memset(&points_show.data[0],255,show_h*show_w*3);
+
     switch (node->GetLaserScanData(laser_scan_points, 1500)){
       case ldlidar::LidarStatus::NORMAL: 
         // get lidar normal data
@@ -184,18 +180,8 @@ int main(int argc, char **argv) {
           LDS_LOG_INFO("stamp:%llu,angle:%f,distance(mm):%d,intensity:%d", 
             point.stamp, point.angle, point.distance, point.intensity);
 #endif
-          int idx_x=point.distance*cos(point.angle/180.0*3.14159)/20;
-          idx_x=idx_x+show_w/2;
-          int idx_y=point.distance*sin(point.angle/180.0*3.14159)/20+show_h/2;
-  
-          if ((idx_x<show_w) && (idx_y<show_h)&&(idx_x>=0) && (idx_y>=0))
-          {
-                cv::circle(points_show,cv::Point(idx_x,idx_y),0,cv::Scalar(0,0,255));
-          }
-
         }
-        cv::imshow("lidar frame",points_show);
-        cv::waitKey(1);
+        
         break;
       case ldlidar::LidarStatus::ERROR:
         LDS_LOG_ERROR("ldlidar is error.","");
